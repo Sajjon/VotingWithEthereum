@@ -10,7 +10,7 @@ contract TestVoting {
 	bytes32 constant ethereumPartyName = "Ethereum Party";
 	bytes32 constant bitcoinPartyName = "Bitcoin Party";
 
-	function _testVotingForParty() public {
+	function testVotingForParty() public {
 		uint expected = 0;
 
 		Assert.equal(voting.getVoteCountForParty(ethereumPartyName), expected, "Vote count for party A should start at 0");
@@ -21,22 +21,26 @@ contract TestVoting {
 		Assert.equal(voting.getVoteCountForParty(bitcoinPartyName), expected, "Vote count for party B should be 0");
 	}
 
+
+	function testKek() public {
+		Assert.equal(keccak256("fdfds"), keccak256("fdfds"),"kek not good");
+		Assert.equal(keccak256("fdfds")!=keccak256("fdfds"),false,"kfdsfdsfsek not good");
+	}
+
 	function testGetName() public {
 		bytes32 nonExistingParty = "nonExistingParty";
 		bytes32 expected = "";
-		bytes nameFromVoting = voting.getName(nonExistingParty);
+		bytes32 nameFromVoting = voting.getName(nonExistingParty);
 		Assert.equal(nameFromVoting, expected, "name should be empty");
-		uint expectedLength = 0;
-		Assert.equal(nameFromVoting.length, expectedLength, "name should have zero length");
 	}
 
-	// function testVotingForNonExistingParty() public {
-	// 	bytes32 nonExistingParty = "foobar";
-	// 	uint expected = 0;
+	function testVotingForNonExistingParty() public {
+		bytes32 nonExistingParty = "foobar";
+		uint expected = 0;
 
-	// 	Assert.equal(voting.getVoteCountForParty(nonExistingParty), expected, "should be 0");
-	// 	voting.voteForParty(nonExistingParty);
-	// 	Assert.equal(voting.getVoteCountForParty(nonExistingParty), expected, "should still be 0");
+		Assert.equal(voting.getVoteCountForParty(nonExistingParty), expected, "should be 0");
+		voting.voteForParty(nonExistingParty);
+		Assert.equal(voting.getVoteCountForParty(nonExistingParty), expected, "should still be 0");
 		
-	// }
+	}
 }

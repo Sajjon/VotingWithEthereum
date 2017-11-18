@@ -30,8 +30,10 @@ contract Voting {
 	function voteForParty(bytes32 partyName) 
 		public
 	{
-		require(partyByName[partyName].name.length > 0);
-		partyByName[partyName].voteCount += 1;
+		if (keccak256(partyByName[partyName].name)!=keccak256("")) { 
+		
+			partyByName[partyName].voteCount += 1;		
+		}
 	}
 
 	function getName(bytes32 partyName) 
@@ -41,9 +43,4 @@ contract Voting {
 	{
 		return partyByName[partyName].name;
 	}
-
-	// function getWinner() public view return (Party) {
-
-	// }
-
 }
