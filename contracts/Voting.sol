@@ -4,7 +4,9 @@ contract Voting {
 
 	uint8 public voteCount = 0;
 
-	function getVoteCount() public 
+	function getVoteCount() 
+		public
+		view
 		returns (uint8) 
 	{
 	  return voteCount;
