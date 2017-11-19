@@ -8,27 +8,20 @@ contract Voting {
         uint count;
     }
     
-	Party[] public parties;
+	bytes32[] public partyHashes;
 
     mapping(address => bytes32) addressVote;
+    mapping(bytes32 => Party) partyByHash;
 
-    function add(bytes32 nameHash) private returns (bool) {
-        for (uint i = 0; i < parties.length; i++) {
-            if(parties[i].nameHash == nameHash) {
-                parties[i].count += 1;
-                return true;
-            }
-        }
-        return false;
+    function add(bytes32 nameHash) private returns (bool) {        
+        bool exists = ((partyByHash[nameHash].nameHash == nameHash) && (partyByHash[nameHash].count > 0));
+        partyByHash[nameHash].count += 1;
+        return exists;
     }
 
     //TODO: remove entires with less than 1 vote
     function sub(bytes32 nameHash) private {
-        for (uint i = 0; i < parties.length; i++) {
-            if(parties[i].nameHash == nameHash) {
-                parties[i].count -= 1;
-            }
-        }
+        partyByHash[nameHash].count -= 1;
     }
 
     function voteAs(address voter, bytes32 nameOfParty) public {
@@ -42,13 +35,12 @@ contract Voting {
         bool found = add(nameHash);
     
         if (!found) {
-            parties.push(
-                Party({
-                    name: nameOfParty,
-                    nameHash: nameHash,
-                    count: 1
-                })
-            );
+            partyByHash[nameHash] = Party({
+                name: nameOfParty,
+                nameHash: nameHash,
+                count: 1
+            });
+            partyHashes.push(nameHash);
         }
     }
 
@@ -59,10 +51,11 @@ contract Voting {
     function getWinningParty() public view returns (bytes32 nameOfParty, uint maxVoteCount) {
         maxVoteCount = 0;
 		nameOfParty = "";
-		for (uint i = 0; i < parties.length; i++) {
-			if (parties[i].count > maxVoteCount) {
-				maxVoteCount = parties[i].count;
-				nameOfParty = parties[i].name;
+		for (uint i = 0; i < partyHashes.length; i++) {
+            bytes32 partyHash = partyHashes[i];
+			if (partyByHash[partyHash].count > maxVoteCount) {
+				maxVoteCount = partyByHash[partyHash].count;
+				nameOfParty = partyByHash[partyHash].name;
 			}
 		}
 		
@@ -70,13 +63,8 @@ contract Voting {
     }
 
     function getVoteCountByName(bytes32 nameOfParty) public view returns (uint) {
-        bytes32 hashedName = keccak256(nameOfParty);
-        for (uint i = 0; i < parties.length; i++) {
-            if (parties[i].nameHash == hashedName) {
-                return parties[i].count;
-            }
-        }
-        return 0;
+        bytes32 nameHash = keccak256(nameOfParty);
+        return partyByHash[nameHash].count;
     }
 
 }
