@@ -21,6 +21,16 @@ contract TestVoting {
 		uint expectedVoteCount = 1;
 		Assert.equal(voting.getVoteCountByName(partyA), expectedVoteCount, "Party A should have 1 votes, even though we have voted multiple times");
 		
+		voting.voteAs(voterA, partyB);
+		expectedVoteCount = 0;
+		Assert.equal(voting.getVoteCountByName(partyA), expectedVoteCount, "Party A should have 0 votes, since voter A change her vote");
+		expectedVoteCount = 1;
+		Assert.equal(voting.getVoteCountByName(partyB), expectedVoteCount, "Party B should have 1 vote, since voter A change her vote");
+
+		voting.voteAs(voterA, partyA);
+		expectedVoteCount = 1;
+		Assert.equal(voting.getVoteCountByName(partyA), expectedVoteCount, "Party A should have 1 votes, since we again change our vote");
+		
 
 		voting.voteAs(voterB, partyA);
 		voting.voteAs(voterC, partyB);
