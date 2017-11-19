@@ -30,8 +30,6 @@ contract Voting {
     }
 
     function getWinningParty() public view returns (bytes32 nameOfParty, uint maxVoteCount) {
-        maxVoteCount = 0;
-		nameOfParty = "";
 		for (uint i = 0; i < partyHashes.length; i++) {
             bytes32 partyHash = partyHashes[i];
 			if (partyByHash[partyHash].count > maxVoteCount) {
@@ -39,7 +37,6 @@ contract Voting {
 				nameOfParty = partyByHash[partyHash].name;
 			}
 		}
-		
 		return (nameOfParty, maxVoteCount);
     }
 

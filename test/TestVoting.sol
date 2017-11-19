@@ -21,7 +21,14 @@ contract TestVoting {
 		Assert.equal(voting.getNumberOfPartiesVotedFor(), 2, "should be 2 parties in list");
 	}
 
-	function testVote() public {
+	function testWinnerEmpty() public {
+		bytes32 emptyString = "";
+		var (nameOfWinningParty, voteCountOfWinningParty) = voting.getWinningParty();
+		Assert.equal(keccak256(nameOfWinningParty), keccak256(emptyString), "Party A should be the winning party");
+		Assert.equal(voteCountOfWinningParty, 0, "Winning Party has 0 votes");
+	}
+
+	function _testVote() public {
 		address voterA = 0x1234;
 		address voterB = 0x1235;
 		address voterC = 0x1236;
