@@ -12,11 +12,6 @@ contract Voting {
     mapping(address => bytes32) addressVote;
     mapping(bytes32 => Party) partyByHash;
 
-
-    function getNumberOfPartiesVotedFor() public view returns (uint) {
-        return partyHashes.length;
-    }
-
     function voteAs(address voter, bytes32 nameOfParty) public {
         bytes32 nameHash = keccak256(nameOfParty);
    
@@ -24,7 +19,7 @@ contract Voting {
             partyHashes.push(nameHash);        
             partyByHash[nameHash].name = nameOfParty;
         }
-        
+
         partyByHash[addressVote[voter]].count -= 1;
         partyByHash[nameHash].count += 1;
         addressVote[voter] = nameHash;
@@ -53,4 +48,7 @@ contract Voting {
         return partyByHash[nameHash].count;
     }
 
+    function getNumberOfPartiesVotedFor() public view returns (uint) {
+        return partyHashes.length;
+    }
 }
