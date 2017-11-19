@@ -4,7 +4,6 @@ contract Voting {
 
 	struct Party {
         bytes32 name;
-        bytes32 nameHash;
         uint count;
     }
     
@@ -13,35 +12,22 @@ contract Voting {
     mapping(address => bytes32) addressVote;
     mapping(bytes32 => Party) partyByHash;
 
-    function add(bytes32 nameHash) private returns (bool) {        
-        bool exists = ((partyByHash[nameHash].nameHash == nameHash) && (partyByHash[nameHash].count > 0));
-        partyByHash[nameHash].count += 1;
-        return exists;
-    }
 
-    //TODO: remove entires with less than 1 vote
-    function sub(bytes32 nameHash) private {
-        partyByHash[nameHash].count -= 1;
+    function getNumberOfPartiesVotedFor() public view returns (uint) {
+        return partyHashes.length;
     }
 
     function voteAs(address voter, bytes32 nameOfParty) public {
-        bytes32 nameHashOld = addressVote[voter];
-        sub(nameHashOld);
-        
         bytes32 nameHash = keccak256(nameOfParty);
-        addressVote[voter] = nameHash;
-
-        //increment this vote
-        bool found = add(nameHash);
-    
-        if (!found) {
-            partyByHash[nameHash] = Party({
-                name: nameOfParty,
-                nameHash: nameHash,
-                count: 1
-            });
-            partyHashes.push(nameHash);
+   
+        if (keccak256(partyByHash[nameHash].name) != keccak256(nameOfParty)) {
+            partyHashes.push(nameHash);        
+            partyByHash[nameHash].name = nameOfParty;
         }
+        
+        partyByHash[addressVote[voter]].count -= 1;
+        partyByHash[nameHash].count += 1;
+        addressVote[voter] = nameHash;
     }
 
     function vote(bytes32 nameOfParty) public {

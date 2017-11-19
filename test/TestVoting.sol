@@ -7,6 +7,15 @@ import "../contracts/Voting.sol";
 contract TestVoting {
 	Voting voting = Voting(DeployedAddresses.Voting());
 
+	function testNoDuplicatesInArrayOfHashes() public {
+		bytes32 foobarParty = "Party foobar";
+		voting.vote(foobarParty);
+		uint expectedPartyCount = 1;
+		Assert.equal(voting.getNumberOfPartiesVotedFor(), expectedPartyCount, "should be 1 party in list");
+		voting.vote(foobarParty);
+		Assert.equal(voting.getNumberOfPartiesVotedFor(), expectedPartyCount, "should still be 1 party in list");
+	}
+
 	function testVote() public {
 		address voterA = 0x1234;
 		address voterB = 0x1235;
@@ -41,7 +50,8 @@ contract TestVoting {
 		Assert.equal(voting.getVoteCountByName(partyB), expectedVoteCount, "Party B should have 1 votes");
 		expectedVoteCount = 2;
 		var (nameOfWinningParty, voteCountOfWinningParty) = voting.getWinningParty();
-		Assert.equal(nameOfWinningParty, partyA, "Party A should be the winning party");
+		bytes32 winner = nameOfWinningParty;
+		Assert.equal(keccak256(winner) == keccak256(partyA), true, "Party A should be the winning party");
 		Assert.equal(voteCountOfWinningParty, expectedVoteCount, "Winning Party A should have vote count of 2");
 	}
 }
