@@ -2,45 +2,98 @@ pragma solidity ^0.4.18;
 
 contract Voting {
 
-	Party[] public parties;
-	mapping(bytes32 => Party) public partyByName;
-
 	struct Party {
-		bytes32 name;
-		uint voteCount;
-	}
+        bytes32 name;
+        bytes32 namehash;
+        uint count;
+    }
+    
+	Party[] public parties;
 
-	function Voting(bytes32[] partyNames) public {
-		for (uint i = 0; i < partyNames.length; i++) {
-			parties.push(Party({
-				name: partyNames[i],
-				voteCount: 0
-			}));
+    mapping(address => bytes32) addressVote;
+
+    function add(bytes32 namehash) private returns (bool) {
+        for ( uint i=0 ; i<parties.length ; i++ ) {
+            if(parties[i].namehash==namehash) {
+                parties[i].count+=1;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //TODO: remove entires with less than 1 vote
+    function sub(bytes32 namehash) {
+        for (uint i=0; i<parties.length; i++) {
+            if(parties[i].namehash==namehash) {
+                parties[i].count-=1;
+            }
+        }
+    }
+
+    function voteAs(address voter, bytes32 name) {
+        bytes32 oldnamehash = addressVote[voter];
+        sub(oldnamehash);
+
+        bytes32 namehash = keccak256(name);
+        addressVote[voter]=namehash;
+
+        //increment this vote
+        bool found = add(namehash);
+
+        if (!found) {
+            parties.push(
+                Party({
+                    name: name,
+                    namehash: keccak256(name),
+                    count: 1
+                })
+            );
+        }
+    }
+
+    function vote(bytes32 name) public {
+        bytes32 oldnamehash = addressVote[msg.sender];
+        sub(oldnamehash);
+        
+        bytes32 namehash = keccak256(name);
+        addressVote[msg.sender]=namehash;
+
+        //increment this vote
+        bool found = add(namehash);
+    
+        if (!found) {
+            parties.push(
+                Party({
+                    name: name,
+                    namehash: keccak256(name),
+                    count: 1
+                })
+            );
+        }
+    }
+
+    function getMax() view returns (bytes32,uint) {
+        uint max = 0;
+		bytes32 maxname = "";
+		for ( uint i=0; i<parties.length; i++) {
+			if (parties[i].count>max) {
+				max = parties[i].count;
+				maxname = parties[i].name;
+			}
 		}
-	}
-
-	function getVoteCountForParty(bytes32 partyName) 
-		public
-		view
-		returns (uint)
-	{
-	  return partyByName[partyName].voteCount;
-	}
-
-	function voteForParty(bytes32 partyName) 
-		public
-	{
-		if (keccak256(partyByName[partyName].name)!=keccak256("")) { 
 		
-			partyByName[partyName].voteCount += 1;		
-		}
-	}
+		return (maxname,max);
+    }
 
-	function getName(bytes32 partyName) 
-		public
-		view
-		returns (bytes32)
-	{
-		return partyByName[partyName].name;
-	}
+    function getVoteCountByName(bytes32 name) public returns (uint) {
+        bytes32 myhash = keccak256(name);
+        for ( uint i=0; i<parties.length; i++) {
+            if (parties[i].namehash==myhash) {
+                return parties[i].count;
+            }
+        }
+        return 0;
+    }
+
 }
