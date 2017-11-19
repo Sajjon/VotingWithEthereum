@@ -4,7 +4,7 @@ contract Voting {
 
 	struct Party {
         bytes32 name;
-        bytes32 namehash;
+        bytes32 nameHash;
         uint count;
     }
     
@@ -12,10 +12,10 @@ contract Voting {
 
     mapping(address => bytes32) addressVote;
 
-    function add(bytes32 namehash) private returns (bool) {
-        for ( uint i=0 ; i<parties.length ; i++ ) {
-            if(parties[i].namehash==namehash) {
-                parties[i].count+=1;
+    function add(bytes32 nameHash) private returns (bool) {
+        for (uint i = 0; i < parties.length; i++) {
+            if(parties[i].nameHash == nameHash) {
+                parties[i].count += 1;
                 return true;
             }
         }
@@ -23,73 +23,56 @@ contract Voting {
     }
 
     //TODO: remove entires with less than 1 vote
-    function sub(bytes32 namehash) {
-        for (uint i=0; i<parties.length; i++) {
-            if(parties[i].namehash==namehash) {
-                parties[i].count-=1;
+    function sub(bytes32 nameHash) private {
+        for (uint i = 0; i < parties.length; i++) {
+            if(parties[i].nameHash == nameHash) {
+                parties[i].count -= 1;
             }
         }
     }
 
-    function voteAs(address voter, bytes32 name) {
-        bytes32 oldnamehash = addressVote[voter];
-        sub(oldnamehash);
-
-        bytes32 namehash = keccak256(name);
-        addressVote[voter]=namehash;
-
-        //increment this vote
-        bool found = add(namehash);
-
-        if (!found) {
-            parties.push(
-                Party({
-                    name: name,
-                    namehash: keccak256(name),
-                    count: 1
-                })
-            );
-        }
-    }
-
-    function vote(bytes32 name) public {
-        bytes32 oldnamehash = addressVote[msg.sender];
-        sub(oldnamehash);
+    function voteAs(address voter, bytes32 nameOfParty) public {
+        bytes32 nameHashOld = addressVote[voter];
+        sub(nameHashOld);
         
-        bytes32 namehash = keccak256(name);
-        addressVote[msg.sender]=namehash;
+        bytes32 nameHash = keccak256(nameOfParty);
+        addressVote[voter] = nameHash;
 
         //increment this vote
-        bool found = add(namehash);
+        bool found = add(nameHash);
     
         if (!found) {
             parties.push(
                 Party({
-                    name: name,
-                    namehash: keccak256(name),
+                    name: nameOfParty,
+                    nameHash: nameHash,
                     count: 1
                 })
             );
         }
     }
 
-    function getMax() view returns (bytes32,uint) {
-        uint max = 0;
-		bytes32 maxname = "";
-		for ( uint i=0; i<parties.length; i++) {
-			if (parties[i].count>max) {
-				max = parties[i].count;
-				maxname = parties[i].name;
+    function vote(bytes32 nameOfParty) public {
+    	voteAs(msg.sender, nameOfParty);
+    }
+
+    function getWinningParty() public view returns (bytes32 nameOfParty, uint maxVoteCount) {
+        maxVoteCount = 0;
+		nameOfParty = "";
+		for (uint i = 0; i < parties.length; i++) {
+			if (parties[i].count > maxVoteCount) {
+				maxVoteCount = parties[i].count;
+				nameOfParty = parties[i].name;
 			}
 		}
 		
-		return (maxname,max);
+		return (nameOfParty, maxVoteCount);
     }
 
-    function getVoteCountByName(bytes32 name) public returns (uint) {
-        bytes32 myhash = keccak256(name);
-        for ( uint i=0; i<parties.length; i++) {
-            if (parties[i].namehash==myhash) {
+    function getVoteCountByName(bytes32 nameOfParty) public view returns (uint) {
+        bytes32 hashedName = keccak256(nameOfParty);
+        for (uint i = 0; i < parties.length; i++) {
+            if (parties[i].nameHash == hashedName) {
                 return parties[i].count;
             }
         }
