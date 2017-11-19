@@ -13,11 +13,19 @@ contract TestVoting {
 		address voterC = 0x1236;
 		bytes32 partyA = "Party A";
 		bytes32 partyB = "Party B";
+
+		// Voting multiple times should note increase the counter.
 		voting.voteAs(voterA, partyA);
+		voting.voteAs(voterA, partyA);
+		voting.voteAs(voterA, partyA);
+		uint expectedVoteCount = 1;
+		Assert.equal(voting.getVoteCountByName(partyA), expectedVoteCount, "Party A should have 1 votes, even though we have voted multiple times");
+		
+
 		voting.voteAs(voterB, partyA);
 		voting.voteAs(voterC, partyB);
+		expectedVoteCount = 2;
 
-		uint expectedVoteCount = 2;
 		Assert.equal(voting.getVoteCountByName(partyA), expectedVoteCount, "Party A should have 2 votes");
 		expectedVoteCount = 1;
 		Assert.equal(voting.getVoteCountByName(partyB), expectedVoteCount, "Party B should have 1 votes");
